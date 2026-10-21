@@ -1,0 +1,5 @@
+---
+vsftpd_banner: "Bienvenido al servidor FTP de ASO"
+vsftpd_pasv_min_port: 30000
+vsftpd_pasv_max_port: 30100
+vsftpd_log_file: /var/log/vsftpd.log

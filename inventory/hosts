@@ -1,0 +1,2 @@
+[servidor]
+target3 ansible_host=192.168.158.132

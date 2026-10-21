@@ -1,0 +1,5 @@
+---
+- name: Despliegue remoto de servicios en openSUSE 16
+  hosts: servidor
+  roles:
+    - { role: vsftpd, tags: vsftpd }

@@ -1,0 +1,5 @@
+---
+postgresql_data_dir: /var/lib/pgsql/data
+postgresql_app_db: aso_pg
+postgresql_app_user: aso_pg_admin
+postgresql_remote_network: 0.0.0.0/0

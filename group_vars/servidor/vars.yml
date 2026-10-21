@@ -2,3 +2,5 @@
 samba_password: "{{ vault_samba_password }}"
 mariadb_root_password: "{{ vault_mariadb_root_password }}"
 mariadb_app_password: "{{ vault_mariadb_app_password }}"
+postgresql_postgres_password: "{{ vault_postgresql_postgres_password }}"
+postgresql_app_password: "{{ vault_postgresql_app_password }}"

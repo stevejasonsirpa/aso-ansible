@@ -2,3 +2,5 @@
 vault_samba_password: CAMBIAR
 vault_mariadb_root_password: CAMBIAR
 vault_mariadb_app_password: CAMBIAR
+vault_postgresql_postgres_password: CAMBIAR
+vault_postgresql_app_password: CAMBIAR

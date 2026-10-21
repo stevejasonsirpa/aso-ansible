@@ -8,6 +8,8 @@
           - vault_samba_password is defined
           - vault_mariadb_root_password is defined
           - vault_mariadb_app_password is defined
+          - vault_postgresql_postgres_password is defined
+          - vault_postgresql_app_password is defined
         fail_msg: "Falta alguna contrasena en group_vars/servidor/vault.yml (revisala con: ansible-vault view group_vars/servidor/vault.yml)"
         quiet: true
       tags: always
@@ -18,3 +20,4 @@
     - { role: phpmyadmin, tags: [phpmyadmin, lamp] }
     - { role: mariadb, tags: [mariadb, lamp] }
     - { role: samba, tags: samba }
+    - { role: postgresql, tags: postgresql }

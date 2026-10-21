@@ -1,0 +1,22 @@
+[global]
+	workgroup = {{ samba_workgroup }}
+	server string = Servidor Samba de ASO
+	passdb backend = tdbsam
+	map to guest = Bad User
+	usershare allow guests = No
+
+[homes]
+	comment = Home Directories
+	valid users = %S
+	browseable = No
+	read only = No
+	inherit acls = Yes
+
+[{{ samba_share_name }}]
+	comment = Recurso compartido de {{ samba_group }}
+	path = {{ samba_share_path }}
+	valid users = @{{ samba_group }}
+	read only = No
+	browseable = Yes
+	create mask = {{ samba_create_mask }}
+	directory mask = {{ samba_directory_mask }}

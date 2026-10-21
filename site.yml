@@ -1,5 +1,14 @@
 ---
 - name: Despliegue remoto de servicios en openSUSE 16
   hosts: servidor
+  pre_tasks:
+    - name: Verificar que el vault tenga todas las contrasenas
+      ansible.builtin.assert:
+        that:
+          - vault_samba_password is defined
+        fail_msg: "Falta alguna contrasena en group_vars/servidor/vault.yml (revisala con: ansible-vault view group_vars/servidor/vault.yml)"
+        quiet: true
+      tags: always
   roles:
     - { role: vsftpd, tags: vsftpd }
+    - { role: samba, tags: samba }

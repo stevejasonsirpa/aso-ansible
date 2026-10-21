@@ -1,0 +1,87 @@
+---
+- name: Instalar Samba
+  community.general.zypper:
+    name:
+      - samba
+      - samba-client
+    state: present
+
+- name: Crear el grupo del recurso compartido
+  ansible.builtin.group:
+    name: "{{ samba_group }}"
+    state: present
+
+- name: Crear los usuarios del sistema
+  ansible.builtin.user:
+    name: "{{ item }}"
+    group: "{{ samba_group }}"
+    create_home: true
+    password: "{{ samba_password | password_hash('sha512') }}"
+    update_password: on_create
+  loop: "{{ samba_users }}"
+  no_log: true
+
+- name: Consultar los usuarios ya registrados en Samba
+  ansible.builtin.command: pdbedit -L
+  register: samba_registrados
+  changed_when: false
+
+- name: Crear los usuarios de Samba
+  ansible.builtin.shell: "printf '%s\n%s\n' \"$CLAVE\" \"$CLAVE\" | smbpasswd -a -s {{ item }}"
+  environment:
+    CLAVE: "{{ samba_password }}"
+  loop: "{{ samba_users }}"
+  when: item + ':' not in samba_registrados.stdout
+  no_log: true
+
+- name: Crear el directorio compartido
+  ansible.builtin.file:
+    path: "{{ samba_share_path }}"
+    state: directory
+    owner: root
+    group: "{{ samba_group }}"
+    mode: "2770"
+
+- name: Etiquetar el directorio para Samba en SELinux
+  community.general.sefcontext:
+    target: "{{ samba_share_path }}(/.*)?"
+    setype: samba_share_t
+    state: present
+  register: samba_selinux
+
+- name: Aplicar la etiqueta de SELinux
+  ansible.builtin.command: "restorecon -R {{ samba_share_path }}"
+  when: samba_selinux.changed
+
+- name: Desplegar la plantilla smb.conf con el recurso y su create mask
+  ansible.builtin.template:
+    src: smb.conf.j2
+    dest: /etc/samba/smb.conf
+    owner: root
+    group: root
+    mode: "0644"
+    validate: testparm -s %s
+  notify: Reiniciar samba
+
+- name: Resolver el nombre del servidor localmente para que Samba no espere al DNS
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.1\.1\s'
+    line: "127.0.1.1 {{ ansible_hostname }}.localdomain {{ ansible_hostname }}"
+  notify: Reiniciar samba
+
+- name: Iniciar y habilitar Samba
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop:
+    - smb
+    - nmb
+
+- name: Abrir Samba en el firewall
+  ansible.posix.firewalld:
+    service: samba
+    permanent: true
+    immediate: true
+    state: enabled

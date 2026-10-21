@@ -1,0 +1,10 @@
+---
+samba_workgroup: WORKGROUP
+samba_group: asogrupo
+samba_users:
+  - aso01
+  - aso02
+samba_share_name: files
+samba_share_path: /opt/files
+samba_create_mask: "0740"
+samba_directory_mask: "0750"

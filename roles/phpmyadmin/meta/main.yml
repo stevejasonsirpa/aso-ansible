@@ -1,0 +1,11 @@
+---
+galaxy_info:
+  author: Steve Jason Sirpa Escalera
+  description: phpMyAdmin publicado en Apache
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: opensuse
+      versions:
+        - all
+dependencies: []

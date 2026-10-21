@@ -1,0 +1,4 @@
+---
+mariadb_socket: /run/mysql/mysql.sock
+mariadb_app_db: aso_db
+mariadb_app_user: aso_admin

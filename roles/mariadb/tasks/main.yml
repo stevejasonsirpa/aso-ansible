@@ -1,0 +1,65 @@
+---
+- name: Instalar MariaDB y el conector de Python
+  community.general.zypper:
+    name:
+      - mariadb
+      - mariadb-client
+      - python313-PyMySQL
+    state: present
+
+- name: Iniciar y habilitar MariaDB
+  ansible.builtin.systemd:
+    name: mariadb
+    state: started
+    enabled: true
+
+- name: Asignar la contrasena de root en MariaDB
+  community.mysql.mysql_user:
+    column_case_sensitive: true
+    name: root
+    host: localhost
+    password: "{{ mariadb_root_password }}"
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"
+    login_unix_socket: "{{ mariadb_socket }}"
+    check_implicit_admin: true
+  no_log: true
+
+- name: Eliminar usuarios anonimos
+  community.mysql.mysql_user:
+    column_case_sensitive: true
+    name: ""
+    host_all: true
+    state: absent
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"
+    login_unix_socket: "{{ mariadb_socket }}"
+
+- name: Eliminar la base de prueba
+  community.mysql.mysql_db:
+    name: test
+    state: absent
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"
+    login_unix_socket: "{{ mariadb_socket }}"
+
+- name: Crear la base de datos de la aplicacion
+  community.mysql.mysql_db:
+    name: "{{ mariadb_app_db }}"
+    state: present
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"
+    login_unix_socket: "{{ mariadb_socket }}"
+
+- name: Crear el usuario de la aplicacion con permisos sobre su base
+  community.mysql.mysql_user:
+    column_case_sensitive: true
+    name: "{{ mariadb_app_user }}"
+    host: localhost
+    password: "{{ mariadb_app_password }}"
+    priv: "{{ mariadb_app_db }}.*:ALL"
+    state: present
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"
+    login_unix_socket: "{{ mariadb_socket }}"
+  no_log: true

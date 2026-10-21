@@ -1,0 +1,15 @@
+---
+- name: Instalar phpMyAdmin
+  community.general.zypper:
+    name: phpMyAdmin
+    state: present
+  notify: Reiniciar apache
+
+- name: Publicar phpMyAdmin en Apache
+  ansible.builtin.copy:
+    src: phpMyAdmin.conf
+    dest: /etc/apache2/conf.d/phpMyAdmin.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reiniciar apache

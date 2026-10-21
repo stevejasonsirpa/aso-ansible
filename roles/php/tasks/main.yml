@@ -1,0 +1,20 @@
+---
+- name: Instalar PHP 8 y su modulo para Apache
+  community.general.zypper:
+    name:
+      - php8
+      - apache2-mod_php8
+      - php8-mysql
+    state: present
+  notify: Reiniciar apache
+
+- name: Consultar si el modulo php8 esta activo en Apache
+  ansible.builtin.command: a2enmod -q php8
+  register: php8_modulo
+  changed_when: false
+  failed_when: false
+
+- name: Activar el modulo php8 en Apache
+  ansible.builtin.command: a2enmod php8
+  when: php8_modulo.rc != 0
+  notify: Reiniciar apache

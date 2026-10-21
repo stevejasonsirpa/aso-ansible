@@ -1,2 +1,4 @@
 ---
 samba_password: "{{ vault_samba_password }}"
+mariadb_root_password: "{{ vault_mariadb_root_password }}"
+mariadb_app_password: "{{ vault_mariadb_app_password }}"

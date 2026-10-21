@@ -6,9 +6,15 @@
       ansible.builtin.assert:
         that:
           - vault_samba_password is defined
+          - vault_mariadb_root_password is defined
+          - vault_mariadb_app_password is defined
         fail_msg: "Falta alguna contrasena en group_vars/servidor/vault.yml (revisala con: ansible-vault view group_vars/servidor/vault.yml)"
         quiet: true
       tags: always
   roles:
     - { role: vsftpd, tags: vsftpd }
+    - { role: apache, tags: [apache, lamp] }
+    - { role: php, tags: [php, lamp] }
+    - { role: phpmyadmin, tags: [phpmyadmin, lamp] }
+    - { role: mariadb, tags: [mariadb, lamp] }
     - { role: samba, tags: samba }

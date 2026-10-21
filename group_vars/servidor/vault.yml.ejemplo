@@ -1,2 +1,4 @@
 ---
 vault_samba_password: CAMBIAR
+vault_mariadb_root_password: CAMBIAR
+vault_mariadb_app_password: CAMBIAR

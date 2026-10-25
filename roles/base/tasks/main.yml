@@ -1,0 +1,24 @@
+---
+- name: Detener y bloquear PackageKit para que no tome el control de zypper
+  ansible.builtin.systemd:
+    name: packagekit
+    state: stopped
+    masked: true
+  failed_when: false
+
+- name: Instalar firewalld
+  community.general.zypper:
+    name: firewalld
+    state: present
+
+- name: Iniciar y habilitar firewalld
+  ansible.builtin.systemd:
+    name: firewalld
+    state: started
+    enabled: true
+
+- name: Resolver el nombre del servidor localmente
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.1\.1\s'
+    line: "127.0.1.1 {{ ansible_hostname }}.localdomain {{ ansible_hostname }}"

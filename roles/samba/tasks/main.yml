@@ -63,13 +63,6 @@
     validate: testparm -s %s
   notify: Reiniciar samba
 
-- name: Resolver el nombre del servidor localmente para que Samba no espere al DNS
-  ansible.builtin.lineinfile:
-    path: /etc/hosts
-    regexp: '^127\.0\.1\.1\s'
-    line: "127.0.1.1 {{ ansible_hostname }}.localdomain {{ ansible_hostname }}"
-  notify: Reiniciar samba
-
 - name: Iniciar y habilitar Samba
   ansible.builtin.systemd:
     name: "{{ item }}"

@@ -16,6 +16,8 @@ encendida, en la misma red, con `sshd` activo y acceso de root por SSH (en openS
 zypper -n install git ansible python313-passlib
 ```
 
+En el destino, `scripts/preparar_destino.sh` habilita el acceso de root por SSH y muestra la IP.
+
 ### 2. Clonar el repositorio
 
 ```bash

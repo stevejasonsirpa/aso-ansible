@@ -74,7 +74,19 @@ Resultado esperado: `failed=0` (unos 4 minutos). Si se ejecuta otra vez: `change
 | Samba | `smbclient //IP_DEL_DESTINO/files -U aso01`; los archivos quedan `-rwxr-----` (create mask 0740) |
 | PostgreSQL | `psql "host=IP_DEL_DESTINO dbname=aso_pg user=aso_pg_admin sslmode=require"`; con `sslmode=disable` se rechaza |
 
-Las contraseñas son las que se pusieron en el vault (paso 5).
+### Usuarios y contraseñas
+
+Las contraseñas son las que se escribieron en el vault (paso 5):
+
+| Para entrar a | Usuario | Contraseña (variable del vault) |
+|---|---|---|
+| phpMyAdmin / MariaDB (administrador) | `root` | `vault_mariadb_root_password` |
+| phpMyAdmin / MariaDB (usuario de la base `aso_db`) | `aso_admin` | `vault_mariadb_app_password` |
+| FTP y Samba | `aso01` o `aso02` | `vault_samba_password` |
+| PostgreSQL (administrador) | `postgres` | `vault_postgresql_postgres_password` |
+| PostgreSQL (usuario de la base `aso_pg`) | `aso_pg_admin` | `vault_postgresql_app_password` |
+
+Para ver las contraseñas: `ansible-vault view group_vars/servidor/vault.yml`
 
 ## Qué pidió la tarea y dónde está
 

@@ -1,33 +1,33 @@
-# ASO - Despliegue de servicios con Ansible
+# Grupo 12 — Despliegue con Ansible en openSUSE 16
 
-Roles de Ansible que despliegan de forma remota, sobre un **openSUSE 16.0 recién instalado**,
-FTP, LAMP (Apache, PHP, phpMyAdmin, MariaDB), Samba y PostgreSQL.
-Materia *Aplicación de Sistemas Operativos* (Ing. Grover Cussi).
+Desde una máquina **master** instala y configura, en una máquina **destino vacía**:
+FTP, Apache + PHP + phpMyAdmin + MariaDB, Samba y PostgreSQL.
 
-## Pasos para el despliegue
+## Pasos para ejecutar
 
-Todo se ejecuta como **root en la máquina master**. La máquina destino solo necesita estar
-encendida, en la misma red, con `sshd` activo y acceso de root por SSH (en openSUSE 16:
-`/etc/ssh/sshd_config.d/root.conf` con `PermitRootLogin yes`).
+Todo como **root en el master**.
 
-### 1. Instalar las herramientas en el master
+En el **destino** solo hace falta permitir root por SSH (una vez):
+
+```bash
+echo "PermitRootLogin yes" > /etc/ssh/sshd_config.d/10-root.conf
+systemctl restart sshd
+```
+
+**1. Instalar herramientas**
 
 ```bash
 zypper -n install git ansible python313-passlib
 ```
 
-En el destino, `scripts/preparar_destino.sh` habilita el acceso de root por SSH y muestra la IP.
-
-### 2. Clonar el repositorio
+**2. Clonar el repositorio**
 
 ```bash
 git clone https://github.com/stevejasonsirpa/aso-ansible.git
 cd aso-ansible
 ```
 
-### 3. Configurar el archivo hosts
-
-Poner la IP de la máquina destino en `inventory/hosts`:
+**3. Poner la IP del destino en el archivo hosts**
 
 ```bash
 nano inventory/hosts
@@ -35,21 +35,19 @@ nano inventory/hosts
 
 ```ini
 [servidor]
-destino ansible_host=192.168.X.X
+destino ansible_host=IP_DEL_DESTINO
 ```
 
-### 4. Autorizar la llave SSH del master en el destino
-
-El inventario no lleva usuario ni contraseña: Ansible entra con la llave SSH del master.
+**4. Copiar la llave SSH al destino** (pide la contraseña de root del destino una vez)
 
 ```bash
-test -f /root/.ssh/id_ed25519 || ssh-keygen -t ed25519 -N "" -f /root/.ssh/id_ed25519
-ssh-copy-id root@192.168.X.X
+ssh-keygen -t ed25519 -N "" -f /root/.ssh/id_ed25519
+ssh-copy-id root@IP_DEL_DESTINO
 ```
 
-`ssh-copy-id` pide una sola vez la contraseña de root del destino.
+Si `ssh-keygen` pregunta `Overwrite`, responder `n`.
 
-### 5. Crear el vault con las contraseñas de los servicios
+**5. Crear el archivo de contraseñas cifrado (vault)**
 
 ```bash
 cp group_vars/servidor/vault.yml.ejemplo group_vars/servidor/vault.yml
@@ -57,62 +55,49 @@ nano group_vars/servidor/vault.yml
 ansible-vault encrypt group_vars/servidor/vault.yml
 ```
 
-En `nano` se reemplaza cada `CAMBIAR` por la contraseña que tendrá ese servicio.
-`ansible-vault encrypt` pide inventar una clave para el vault. El archivo cifrado no se sube al
-repositorio (`.gitignore`).
+En `nano` se cambia cada `CAMBIAR` por una contraseña. `ansible-vault encrypt` pide inventar una clave.
 
-### 6. Ejecutar el despliegue
+**6. Ejecutar**
 
 ```bash
 ansible-playbook site.yml --ask-vault-pass
 ```
 
-Termina con `failed=0`. También se puede desplegar un solo servicio:
+Resultado esperado: `failed=0` (unos 4 minutos). Si se ejecuta otra vez: `changed=0` en segundos.
 
-```bash
-ansible-playbook site.yml --ask-vault-pass --tags postgresql
-ansible-playbook site.yml --ask-vault-pass --tags lamp
-```
+## Comprobar
 
-### 7. Verificar
-
-| Servicio | Prueba desde el master |
+| Servicio | Prueba |
 |---|---|
-| FTP | `ftp 192.168.X.X` con `aso01` y la contraseña de Samba del vault |
-| phpMyAdmin | Navegador: `http://192.168.X.X/phpmyadmin`, usuario `root` |
-| Samba | `smbclient //192.168.X.X/files -U aso01`, `put` de un archivo, y en el destino `ls -l /opt/files` muestra `-rwxr-----` |
-| PostgreSQL | `psql "host=192.168.X.X dbname=aso_pg user=aso_pg_admin sslmode=require"` conecta; con `sslmode=disable` se rechaza |
+| phpMyAdmin | Navegador: `http://IP_DEL_DESTINO/phpmyadmin` (usuario `root`) |
+| FTP | `ftp IP_DEL_DESTINO` (usuario `aso01`) |
+| Samba | `smbclient //IP_DEL_DESTINO/files -U aso01`; los archivos quedan `-rwxr-----` (create mask 0740) |
+| PostgreSQL | `psql "host=IP_DEL_DESTINO dbname=aso_pg user=aso_pg_admin sslmode=require"`; con `sslmode=disable` se rechaza |
 
-## Roles
+Las contraseñas son las que se pusieron en el vault (paso 5).
 
-| Rol | Qué hace | Plantilla |
-|---|---|---|
-| `base` | Bloquea PackageKit (que traba a zypper), activa firewalld y resuelve el nombre del host | |
-| `vsftpd` | FTP con usuarios enjaulados (`chroot`), log de transferencias y puertos pasivos | `vsftpd.conf.j2` |
-| `apache` | Apache 2 con HTTP abierto en el firewall | |
-| `php` | PHP 8 y su módulo para Apache | |
-| `phpmyadmin` | phpMyAdmin publicado en `/phpmyadmin` | `phpMyAdmin.conf` |
-| `mariadb` | Contraseña de root, sin usuarios anónimos ni base de prueba, base `aso_db` y usuario `aso_admin` | |
-| `samba` | Grupo `asogrupo`, usuarios `aso01` y `aso02` (sistema y Samba), `/opt/files` y recurso `[files]` con `create mask 0740` | `smb.conf.j2` |
-| `postgresql` | PostgreSQL, `php8-pgsql`, contraseña de `postgres`, base `aso_pg`, usuario `aso_pg_admin` y conexión remota solo cifrada (SSL + scram-sha-256) | `pg_hba.conf.j2` |
+## Qué pidió la tarea y dónde está
 
-## Tiempo de respuesta
+| Pedido | Dónde |
+|---|---|
+| Apache, PHP, phpMyAdmin | roles `apache`, `php`, `phpmyadmin` |
+| MariaDB configurado | rol `mariadb`: contraseña de root, base `aso_db`, usuario `aso_admin` |
+| Samba con create mask | rol `samba`: usuarios `aso01` y `aso02`, carpeta `/opt/files`, mask `0740` |
+| Hosts sin usuario ni contraseña | `inventory/hosts` solo tiene la IP; contraseñas cifradas en el vault |
+| Más rápido | `ansible.cfg`: pipelining, conexiones SSH reutilizadas, caché de facts |
+| Roles | carpeta `roles/`, un rol por servicio |
+| Plantillas en Git | `vsftpd.conf.j2`, `smb.conf.j2`, `pg_hba.conf.j2` |
+| PostgreSQL | rol `postgresql`: usuario, base, librería `php8-pgsql`, solo conexiones SSL |
 
-`ansible.cfg` activa *pipelining*, conexiones SSH persistentes (`ControlPersist`), caché de facts,
-`gather_subset = min` y `profile_tasks` para medir cada tarea. Una segunda ejecución sin cambios
-termina en segundos con `changed=0`.
+## Si algo falla
 
-## Errores frecuentes
+| Mensaje | Solución |
+|---|---|
+| `UNREACHABLE` | Revisar la IP en `inventory/hosts` |
+| `Permission denied` en `ssh-copy-id` | En el destino falta el paso de `PermitRootLogin yes` |
+| `No se pudo entrar a MariaDB como root...` | El destino no está vacío: ya tenía MariaDB con otra contraseña |
+| `Decryption failed` | La clave del vault está mal escrita |
 
-| Mensaje | Causa | Solución |
-|---|---|---|
-| `UNREACHABLE` / `Connection timed out` | `inventory/hosts` tiene otra IP o el destino no tiene red | Poner la IP correcta (`ip a` en el destino) |
-| `no such identity ... Permission denied (publickey...)` | No se autorizó la llave del usuario que ejecuta Ansible | `ssh-copy-id root@IP_DEL_DESTINO` con el mismo usuario que corre `ansible-playbook` |
-| `No se pudo entrar a MariaDB como root...` | El destino no está vacío: ya tenía MariaDB con otra contraseña de root | Usar una máquina vacía, poner esa contraseña en el vault o borrar MariaDB del destino |
-| `pyexpat ... undefined symbol XML_SetAllocTracker...` | En el destino, Python y `libexpat` quedaron en versiones distintas (actualización a medias) | En el destino: `zypper -n update libexpat1` y volver a ejecutar |
-| `Decryption failed` | Clave del vault incorrecta | Volver a escribirla; respeta mayúsculas y minúsculas |
-
-
-##contributors
+## Contributors
 
 Rodrigo Mamani Rocha

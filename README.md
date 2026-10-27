@@ -111,3 +111,8 @@ termina en segundos con `changed=0`.
 | `No se pudo entrar a MariaDB como root...` | El destino no está vacío: ya tenía MariaDB con otra contraseña de root | Usar una máquina vacía, poner esa contraseña en el vault o borrar MariaDB del destino |
 | `pyexpat ... undefined symbol XML_SetAllocTracker...` | En el destino, Python y `libexpat` quedaron en versiones distintas (actualización a medias) | En el destino: `zypper -n update libexpat1` y volver a ejecutar |
 | `Decryption failed` | Clave del vault incorrecta | Volver a escribirla; respeta mayúsculas y minúsculas |
+
+
+##contributors
+
+Rodrigo Mamani Rocha

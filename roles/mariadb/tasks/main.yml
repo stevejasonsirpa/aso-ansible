@@ -14,16 +14,26 @@
     enabled: true
 
 - name: Asignar la contrasena de root en MariaDB
-  community.mysql.mysql_user:
-    column_case_sensitive: true
-    name: root
-    host: localhost
-    password: "{{ mariadb_root_password }}"
-    login_user: root
-    login_password: "{{ mariadb_root_password }}"
-    login_unix_socket: "{{ mariadb_socket }}"
-    check_implicit_admin: true
-  no_log: true
+  block:
+    - name: Asignar la contrasena de root en MariaDB
+      community.mysql.mysql_user:
+        column_case_sensitive: true
+        name: root
+        host: localhost
+        password: "{{ mariadb_root_password }}"
+        login_user: root
+        login_password: "{{ mariadb_root_password }}"
+        login_unix_socket: "{{ mariadb_socket }}"
+        check_implicit_admin: true
+      no_log: true
+  rescue:
+    - name: Explicar por que no se pudo entrar a MariaDB
+      ansible.builtin.fail:
+        msg: >-
+          No se pudo entrar a MariaDB como root ni sin contrasena ni con la del vault.
+          Este servidor ya tenia MariaDB con otra contrasena de root (no es una maquina vacia).
+          Soluciones: usar una maquina vacia, poner esa contrasena en vault_mariadb_root_password,
+          o borrar MariaDB en el destino con: zypper -n remove mariadb && rm -rf /var/lib/mysql
 
 - name: Eliminar usuarios anonimos
   community.mysql.mysql_user:

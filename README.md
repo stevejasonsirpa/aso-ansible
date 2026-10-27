@@ -101,3 +101,13 @@ ansible-playbook site.yml --ask-vault-pass --tags lamp
 `ansible.cfg` activa *pipelining*, conexiones SSH persistentes (`ControlPersist`), caché de facts,
 `gather_subset = min` y `profile_tasks` para medir cada tarea. Una segunda ejecución sin cambios
 termina en segundos con `changed=0`.
+
+## Errores frecuentes
+
+| Mensaje | Causa | Solución |
+|---|---|---|
+| `UNREACHABLE` / `Connection timed out` | `inventory/hosts` tiene otra IP o el destino no tiene red | Poner la IP correcta (`ip a` en el destino) |
+| `no such identity ... Permission denied (publickey...)` | No se autorizó la llave del usuario que ejecuta Ansible | `ssh-copy-id root@IP_DEL_DESTINO` con el mismo usuario que corre `ansible-playbook` |
+| `No se pudo entrar a MariaDB como root...` | El destino no está vacío: ya tenía MariaDB con otra contraseña de root | Usar una máquina vacía, poner esa contraseña en el vault o borrar MariaDB del destino |
+| `pyexpat ... undefined symbol XML_SetAllocTracker...` | En el destino, Python y `libexpat` quedaron en versiones distintas (actualización a medias) | En el destino: `zypper -n update libexpat1` y volver a ejecutar |
+| `Decryption failed` | Clave del vault incorrecta | Volver a escribirla; respeta mayúsculas y minúsculas |

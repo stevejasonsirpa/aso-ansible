@@ -66,12 +66,9 @@
 
 - name: Iniciar y habilitar Samba
   ansible.builtin.systemd:
-    name: "{{ item }}"
+    name: smb
     state: started
     enabled: true
-  loop:
-    - smb
-    - nmb
 
 - name: Abrir Samba en el firewall
   ansible.posix.firewalld:

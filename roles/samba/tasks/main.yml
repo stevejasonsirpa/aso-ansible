@@ -48,10 +48,11 @@
     setype: samba_share_t
     state: present
   register: samba_selinux
+  when: ansible_facts.selinux.status | default('disabled') == 'enabled'
 
 - name: Aplicar la etiqueta de SELinux
   ansible.builtin.command: "restorecon -R {{ samba_share_path }}"
-  when: samba_selinux.changed
+  when: samba_selinux is changed
 
 - name: Desplegar la plantilla smb.conf con el recurso y su create mask
   ansible.builtin.template:

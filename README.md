@@ -114,5 +114,5 @@ Para ver las contraseñas: `ansible-vault view group_vars/servidor/vault.yml`
 
 ## Contributors
 
-Rodrigo Mamani Rocha
-Franz Gabriel Totora Huanca
+- Rodrigo Mamani Rocha
+- Franz Gabriel Totora Huanca

@@ -110,6 +110,9 @@ Para ver las contraseñas: `ansible-vault view group_vars/servidor/vault.yml`
 | `No se pudo entrar a MariaDB como root...` | El destino no está vacío: ya tenía MariaDB con otra contraseña |
 | `Decryption failed` | La clave del vault está mal escrita |
 
+| `Connection refused` | Verificar que el servicio SSH esté activo en la máquina destino. |
+
 ## Contributors
 
 Rodrigo Mamani Rocha
+Franz Gabriel Totora Huanca

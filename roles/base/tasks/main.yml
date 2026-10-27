@@ -6,9 +6,12 @@
     masked: true
   failed_when: false
 
-- name: Instalar firewalld
+- name: Instalar firewalld y las herramientas de SELinux que usan los roles
   community.general.zypper:
-    name: firewalld
+    name:
+      - firewalld
+      - python313-selinux
+      - policycoreutils-python-utils
     state: present
 
 - name: Iniciar y habilitar firewalld

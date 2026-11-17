@@ -86,7 +86,7 @@ USUARIOS Y CONTRASENAS (las que se escribieron en el vault, paso 5)
 
 
 SI ALGO FALLA
--------------
+
 
 UNREACHABLE                          revisar la IP en inventory/hosts
 Connection refused                   en el destino: systemctl enable --now sshd

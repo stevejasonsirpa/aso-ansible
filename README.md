@@ -57,11 +57,19 @@ ansible-vault encrypt group_vars/servidor/vault.yml
 
 En `nano` se cambia cada `CAMBIAR` por una contraseña. `ansible-vault encrypt` pide inventar una clave.
 
-**6. Ejecutar**
+**6. Ejecutar midiendo el tiempo**
+
+Para que `time` mida solo el despliegue (y no lo que tarda en escribirse la clave), la clave del vault
+se guarda en un archivo:
 
 ```bash
-ansible-playbook site.yml --ask-vault-pass
+nano ~/.vault_pass
+chmod 600 ~/.vault_pass
+time ansible-playbook site.yml --vault-password-file ~/.vault_pass
 ```
+
+En `nano` se escribe la clave del vault del paso 5. También se puede preguntar la clave:
+`time ansible-playbook site.yml --ask-vault-pass`.
 
 Resultado esperado: `failed=0` (unos 4 minutos). Si se ejecuta otra vez: `changed=0` en segundos.
 
@@ -109,10 +117,10 @@ Para ver las contraseñas: `ansible-vault view group_vars/servidor/vault.yml`
 | `Permission denied` en `ssh-copy-id` | En el destino falta el paso de `PermitRootLogin yes` |
 | `No se pudo entrar a MariaDB como root...` | El destino no está vacío: ya tenía MariaDB con otra contraseña |
 | `Decryption failed` | La clave del vault está mal escrita |
-
-| `Connection refused` | Verificar que el servicio SSH esté activo en la máquina destino. |
+| `Connection refused` | En el destino el servicio SSH no está activo: `systemctl enable --now sshd` |
 
 ## Contributors
 
 - Rodrigo Mamani Rocha
 - Franz Gabriel Totora Huanca
+- Steve Jason Sirpa Escalera
